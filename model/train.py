@@ -2,11 +2,13 @@ import logging
 import os
 
 import torch
+from datasets import load_dataset
 from seqeval.metrics import f1_score
+from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from consts import DEVICE, MAX_EPOCHS, MODEL_DIR, PATIENCE
-from get_dataset import train_loader, val_loader, idx2tag
+from consts import DEVICE, MAX_EPOCHS, MODEL_DIR, PATIENCE, BATCH_SIZE
+from get_dataset import idx2tag, build_vocab, CoNLLDataset, collate_fn
 from model import BiLSTM_CRF, model, optimizer, scheduler
 
 logging.basicConfig(level=logging.INFO)
@@ -14,7 +16,21 @@ logger = logging.getLogger(__name__)
 
 
 def train():
+    dataset = load_dataset("lhoestq/conll2003")
+
+    NER_TAGS = ['O', 'B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC']
+    tag2idx = {t: i for i, t in enumerate(NER_TAGS)}
+    idx2tag = {i: t for t, i in tag2idx.items()}
+
+    word2idx = build_vocab(dataset['train'], min_freq=1)
+    vocab_size = len(word2idx)
+    print(f"Vocab size: {vocab_size}")
+
     logger.info(f"Using device: {DEVICE}")
+    train_loader = DataLoader(CoNLLDataset(dataset['train']), batch_size=BATCH_SIZE, shuffle=True,
+                              collate_fn=collate_fn)
+    val_loader = DataLoader(CoNLLDataset(dataset['validation']), batch_size=BATCH_SIZE, shuffle=False,
+                            collate_fn=collate_fn)
 
     best_f1 = 0.0
     patience_cnt = 0
