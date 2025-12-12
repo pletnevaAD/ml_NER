@@ -3,12 +3,11 @@ import os
 
 import torch
 from seqeval.metrics import f1_score
-from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from model.consts import DEVICE, MAX_EPOCHS, MODEL_DIR, PATIENCE, BATCH_SIZE, LR, WARMUP_EPOCHS
-from model.get_dataset import idx2tag, CoNLLDataset, collate_fn, dataset
-from model.model import BiLSTM_CRF, model, optimizer
+from model.consts import DEVICE, MAX_EPOCHS, MODEL_DIR, PATIENCE, LR, WARMUP_EPOCHS
+from model.get_dataset import get_dataset
+from model.model import model, optimizer
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -16,11 +15,10 @@ logger = logging.getLogger(__name__)
 
 def train():
     logger.info(f"Using device: {DEVICE}")
-    train_loader = DataLoader(CoNLLDataset(dataset['train']), batch_size=BATCH_SIZE, shuffle=True,
-                              collate_fn=collate_fn)
-    val_loader = DataLoader(CoNLLDataset(dataset['validation']), batch_size=BATCH_SIZE, shuffle=False,
-                            collate_fn=collate_fn)
-
+    train_loader, val_loader, _ = get_dataset()
+    NER_TAGS = ['O', 'B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC']
+    tag2idx = {t: i for i, t in enumerate(NER_TAGS)}
+    idx2tag = {i: t for t, i in tag2idx.items()}
     total_steps = len(train_loader) * MAX_EPOCHS
     scheduler = torch.optim.lr_scheduler.OneCycleLR(
         optimizer,

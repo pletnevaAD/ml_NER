@@ -1,9 +1,10 @@
+import json
+
 import torch
 from torch import nn
 from torchcrf import CRF
 
 from model.consts import DEVICE, LR, WEIGHT_DECAY
-from model.get_dataset import vocab_size, NER_TAGS
 
 DROPOUT_EMB = 0.5
 DROPOUT_LSTM = 0.5
@@ -37,5 +38,10 @@ class BiLSTM_CRF(nn.Module):
         emissions = self.forward(x, mask)
         return self.crf.decode(emissions, mask=mask)
 
+
+with open("word2idx.json", "r", encoding="utf-8") as f:
+    word2idx = json.load(f)
+vocab_size = len(word2idx)
+NER_TAGS = ['O', 'B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC']
 model = BiLSTM_CRF(vocab_size, len(NER_TAGS)).to(DEVICE)
 optimizer = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)

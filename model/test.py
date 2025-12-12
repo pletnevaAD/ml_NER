@@ -2,16 +2,18 @@ import os
 
 import torch
 from seqeval.metrics import f1_score, classification_report
-from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from model.consts import MODEL_DIR, DEVICE, BATCH_SIZE
+from model.consts import MODEL_DIR, DEVICE
+from model.get_dataset import get_dataset
 from model.model import model
-from model.get_dataset import CoNLLDataset, dataset
 
 
 def test():
-    test_loader = DataLoader(CoNLLDataset(dataset['test']), batch_size=BATCH_SIZE, shuffle=False, collate_fn=collate_fn)
+    NER_TAGS = ['O', 'B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC']
+    tag2idx = {t: i for i, t in enumerate(NER_TAGS)}
+    idx2tag = {i: t for t, i in tag2idx.items()}
+    _, _, test_loader = get_dataset()
 
     model.load_state_dict(torch.load(os.path.join(MODEL_DIR, "best_model.pth")))
     model.eval()
