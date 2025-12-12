@@ -2,13 +2,12 @@ import logging
 import os
 
 import torch
-from datasets import load_dataset
 from seqeval.metrics import f1_score
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from consts import DEVICE, MAX_EPOCHS, MODEL_DIR, PATIENCE, BATCH_SIZE
-from get_dataset import idx2tag, build_vocab, CoNLLDataset, collate_fn, dataset
+from get_dataset import idx2tag, CoNLLDataset, collate_fn, dataset
 from model import BiLSTM_CRF, model, optimizer, scheduler
 
 logging.basicConfig(level=logging.INFO)

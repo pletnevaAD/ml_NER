@@ -1,7 +1,6 @@
 import os
 
 import torch
-from datasets import load_dataset
 from seqeval.metrics import f1_score, classification_report
 from torch.utils.data import DataLoader
 from tqdm import tqdm
