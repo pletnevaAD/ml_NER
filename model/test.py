@@ -5,8 +5,8 @@ from seqeval.metrics import f1_score, classification_report
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from consts import MODEL_DIR, DEVICE, BATCH_SIZE
-from model import model
+from model.consts import MODEL_DIR, DEVICE, BATCH_SIZE
+from model.model import model
 from model.get_dataset import CoNLLDataset, dataset
 
 

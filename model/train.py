@@ -6,9 +6,9 @@ from seqeval.metrics import f1_score
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from consts import DEVICE, MAX_EPOCHS, MODEL_DIR, PATIENCE, BATCH_SIZE
-from get_dataset import idx2tag, CoNLLDataset, collate_fn, dataset
-from model import BiLSTM_CRF, model, optimizer, scheduler
+from model.consts import DEVICE, MAX_EPOCHS, MODEL_DIR, PATIENCE, BATCH_SIZE, LR, WARMUP_EPOCHS
+from model.get_dataset import idx2tag, CoNLLDataset, collate_fn, dataset
+from model.model import BiLSTM_CRF, model, optimizer
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -20,6 +20,17 @@ def train():
                               collate_fn=collate_fn)
     val_loader = DataLoader(CoNLLDataset(dataset['validation']), batch_size=BATCH_SIZE, shuffle=False,
                             collate_fn=collate_fn)
+
+    total_steps = len(train_loader) * MAX_EPOCHS
+    scheduler = torch.optim.lr_scheduler.OneCycleLR(
+        optimizer,
+        max_lr=LR,
+        total_steps=total_steps,
+        pct_start=WARMUP_EPOCHS / MAX_EPOCHS,
+        anneal_strategy='cos',
+        div_factor=25,
+        final_div_factor=1e4
+    )
 
     best_f1 = 0.0
     patience_cnt = 0

@@ -2,8 +2,8 @@ import torch
 from torch import nn
 from torchcrf import CRF
 
-from model.consts import DEVICE, LR, WEIGHT_DECAY, MAX_EPOCHS, WARMUP_EPOCHS
-from model.get_dataset import vocab_size, NER_TAGS, train_loader
+from model.consts import DEVICE, LR, WEIGHT_DECAY
+from model.get_dataset import vocab_size, NER_TAGS
 
 DROPOUT_EMB = 0.5
 DROPOUT_LSTM = 0.5
@@ -39,14 +39,3 @@ class BiLSTM_CRF(nn.Module):
 
 model = BiLSTM_CRF(vocab_size, len(NER_TAGS)).to(DEVICE)
 optimizer = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=WEIGHT_DECAY)
-
-total_steps = len(train_loader) * MAX_EPOCHS
-scheduler = torch.optim.lr_scheduler.OneCycleLR(
-    optimizer,
-    max_lr=LR,
-    total_steps=total_steps,
-    pct_start=WARMUP_EPOCHS / MAX_EPOCHS,
-    anneal_strategy='cos',
-    div_factor=25,
-    final_div_factor=1e4
-)
