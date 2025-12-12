@@ -15,6 +15,15 @@ def build_vocab(data, min_freq=1):
             vocab[w] = len(vocab)
     return vocab
 
+dataset = load_dataset("lhoestq/conll2003")
+
+NER_TAGS = ['O', 'B-PER', 'I-PER', 'B-ORG', 'I-ORG', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC']
+tag2idx = {t: i for i, t in enumerate(NER_TAGS)}
+idx2tag = {i: t for t, i in tag2idx.items()}
+
+word2idx = build_vocab(dataset['train'], min_freq=1)
+vocab_size = len(word2idx)
+print(f"Vocab size: {vocab_size}")
 
 def collate_fn(batch):
     tokens, tags = zip(*batch)
